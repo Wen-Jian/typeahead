@@ -1,0 +1,79 @@
+html 
+    head 
+        title = title
+        script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js")
+        style.
+            .input-group {
+                width: 200px;
+            }
+            .input-wrapper {
+                position: relative;
+            }
+
+            #search_input {
+                border: solid 1px gray;
+                position: absolute;
+                left: 1px;
+                top: 1px;
+                background: transparent;
+            }
+
+            #search_result {
+                position: sticky;
+            }
+
+            .hint {
+                color: gray;
+            }
+    body 
+        div
+            div.input-group
+                label Single Selection 
+                div.input-wrapper
+                    input#search_hint(placeholder="Choose a state")
+                    input#search_input
+                div#search_result
+
+        script(type='text/javascript').
+
+            $('#search_input').on("input", function() {
+                const query = $(this).val()
+                $.ajax({
+                    url: "./states",
+                    method: 'GET',
+                    dataType: 'json',
+                    data: {
+                        state: query
+                    },
+                    success:function(res){
+                        const {data} = res
+                        const child = $('<div><div>')
+                        for (index in data) {
+                            const state = data[index]
+                            child.append(`<div class="list" onclick="onListSelected('${state}')">${state}</div>`)
+                        }
+                        $('#search_result').html(child)
+                        let newPlaceholder = ""
+                        if (query.length !== 0 && data[0].toLowerCase().indexOf(query.toLowerCase()) === 0) {
+                            newPlaceholder = query + data[0].slice(query.length, data[0].length - 1)
+                        }
+                        $('#search_hint').attr("placeholder", newPlaceholder)
+                    },
+                    error:function(err){console.log("err", err)},
+                })
+            })
+
+            const onListSelected = (data) => {
+                $('#search_input').html(data)
+                removeSearchResult()
+            }
+
+            const removeSearchResult = () => {
+                $('#search_result').empty()
+            }
+
+            $('input').blur(() => {
+                removeSearchResult()
+                $('#search_hint').attr("placeholder", "")
+            })
+            
