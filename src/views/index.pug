@@ -35,9 +35,9 @@ html
                 div#search_result
 
         script(type='text/javascript').
-
-            $('#search_input').on("input", function() {
-                const query = $(this).val()
+            let selectedListIndex = null
+            const onInputChanged = () => {
+                const query = $("#search_input").val()
                 $.ajax({
                     url: "./states",
                     method: 'GET',
@@ -47,10 +47,10 @@ html
                     },
                     success:function(res){
                         const {data} = res
-                        const child = $('<div><div>')
+                        const child = []
                         for (index in data) {
                             const state = data[index]
-                            child.append(`<div class="list" onclick="onListSelected('${state}')">${state}</div>`)
+                            child.push(`<div class="list" onclick="onListSelected('${state}')">${state}</div>`)
                         }
                         $('#search_result').html(child)
                         let newPlaceholder = ""
@@ -61,10 +61,13 @@ html
                     },
                     error:function(err){console.log("err", err)},
                 })
-            })
+            }
+            $('#search_input').on("input", onInputChanged)
+            $('#search_input').on("focus", onInputChanged)
 
             const onListSelected = (data) => {
-                $('#search_input').html(data)
+                $('#search_input').val(data)
+                $('#search_hint').attr("placeholder", "")
                 removeSearchResult()
             }
 
@@ -74,6 +77,43 @@ html
 
             $('input').blur(() => {
                 removeSearchResult()
-                $('#search_hint').attr("placeholder", "")
+                const query = $('#search_input').val()
+                const placehodler = query === "" ? "Choose a state" : ""
+                $('#search_hint').attr("placeholder", placehodler)
             })
             
+            $(document).keydown(function(e) {
+                const listLength = $("#search_result").children().length
+                if (listLength > 0 && e.keyCode === 40 || e.keyCode === 38) {
+                    if (selectedListIndex !== null) {
+                        $(`#search_result > div:nth-child(${selectedListIndex})`).css("background-color", "white")
+                    }
+                    if (e.keyCode === 40) {
+                        if (selectedListIndex === null) {
+                            selectedListIndex = 1
+                            console.log("innit")
+                        } else {
+                            console.log("add 1")
+                            selectedListIndex = selectedListIndex == listLength ? selectedListIndex : selectedListIndex + 1
+                        }
+                    }
+
+                    if (e.keyCode === 38) {
+                        if (selectedListIndex === null) {
+                            selectedListIndex = listLength
+                        } else {
+                            selectedListIndex = selectedListIndex == 1 ? selectedListIndex : selectedListIndex - 1
+                        }
+                    }
+                    $(`#search_result > div:nth-child(${selectedListIndex})`).css("background-color", "blue")
+                }
+            });
+
+            $(document).keydown(function(e) {
+                console.log(e.keyCode)
+                const listLength = $("#search_result").children().length
+                if (e.keyCode === 13 && listLength > 0 && selectedListIndex != null) {
+                    const value = $(`#search_result > div:nth-child(${selectedListIndex})`).html()
+                    onListSelected(value)
+                }
+            })
