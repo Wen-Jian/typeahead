@@ -33,11 +33,13 @@ html
                     input#search_hint(placeholder="Choose a state")
                     input#search_input
                 div#search_result
+                    
 
         script(type='text/javascript').
             let selectedListIndex = null
             const onInputChanged = () => {
                 const query = $("#search_input").val()
+                selectedListIndex = null
                 $.ajax({
                     url: "./states",
                     method: 'GET',
@@ -54,7 +56,7 @@ html
                         }
                         $('#search_result').html(child)
                         let newPlaceholder = ""
-                        if (query.length !== 0 && data[0].toLowerCase().indexOf(query.toLowerCase()) === 0) {
+                        if (query.length !== 0 && data.length > 0 && data[0].toLowerCase().indexOf(query.toLowerCase()) === 0) {
                             newPlaceholder = query + data[0].slice(query.length, data[0].length - 1)
                         }
                         $('#search_hint').attr("placeholder", newPlaceholder)
@@ -75,11 +77,13 @@ html
                 $('#search_result').empty()
             }
 
-            $('input').blur(() => {
-                removeSearchResult()
-                const query = $('#search_input').val()
-                const placehodler = query === "" ? "Choose a state" : ""
-                $('#search_hint').attr("placeholder", placehodler)
+            $('#search_input').blur(() => {
+                setTimeout(() => {
+                    removeSearchResult()
+                    const query = $('#search_input').val()
+                    const placehodler = query === "" ? "Choose a state" : ""
+                    $('#search_hint').attr("placeholder", placehodler)
+                }, 200)
             })
             
             $(document).keydown(function(e) {
@@ -91,9 +95,7 @@ html
                     if (e.keyCode === 40) {
                         if (selectedListIndex === null) {
                             selectedListIndex = 1
-                            console.log("innit")
                         } else {
-                            console.log("add 1")
                             selectedListIndex = selectedListIndex == listLength ? selectedListIndex : selectedListIndex + 1
                         }
                     }
@@ -110,7 +112,6 @@ html
             });
 
             $(document).keydown(function(e) {
-                console.log(e.keyCode)
                 const listLength = $("#search_result").children().length
                 if (e.keyCode === 13 && listLength > 0 && selectedListIndex != null) {
                     const value = $(`#search_result > div:nth-child(${selectedListIndex})`).html()

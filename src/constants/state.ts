@@ -48,7 +48,7 @@ export enum State {
     Washington = "Washington",
     WestVirginia = "West Virginia",
     Wisconsin = "Wisconsin",
-    Wyoming = "Governed",
+    Wyoming = "Wyoming",
 }
 
 export const states = Object.values(State)
